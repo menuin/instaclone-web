@@ -10,6 +10,7 @@ import FormBox from "../components/auth/FormBox";
 import BottomBox from "../components/auth/BottomBox";
 import PageTitle from "../components/PageTitle";
 import { useForm } from "react-hook-form";
+import FormError from "../components/auth/FormError";
 
 
 const FacebookLogin = styled.div`
@@ -21,13 +22,14 @@ const FacebookLogin = styled.div`
 `
 
 function Login() {
-    const { register, watch, handleSubmit } = useForm();
+    const { register, watch, handleSubmit, formState } = useForm({
+        mode: "onChange",
+    });
+
     const onSubmitValid = (data) => {
-        console.log(data);
+        // console.log(data);
     }
-    const onSubmitInvalid = (data) => {
-        console.log(data, "Invalid");
-    }
+
     return (
         <AuthLayout>
             <PageTitle title="Login" />
@@ -36,17 +38,21 @@ function Login() {
                     <FontAwesomeIcon icon={faInstagram} size="3x" />
                 </div>
                 <h1>Instagram</h1>
-                <form onSubmit={handleSubmit(onSubmitValid, onSubmitInvalid)}>
+                <form onSubmit={handleSubmit(onSubmitValid)}>
                     <Input
                         {...register('username', {
                             required: "Username is required",
-                            minLength: 5,
-                            validate: (currentValue) => currentValue.includes("potato")
+                            minLength: {
+                                value: 5,
+                                message: "Username should be longer than 5 characters"
+                            },
                         })}
                         name="username"
                         type="text"
                         placeholder="Username"
+                        hasError={Boolean(formState.errors?.username?.message)}
                     />
+                    <FormError message={formState.errors?.username?.message} />
                     <Input
                         {...register('password', {
                             required: "Password is required.",
@@ -54,8 +60,10 @@ function Login() {
                         name="password"
                         type="password"
                         placeholder="Password"
+                        hasError={Boolean(formState.errors?.password?.message)}
                     />
-                    <Button type="submit" value="Log in" />
+                    <FormError message={formState.errors?.password?.message} />
+                    <Button type="submit" value="Log in" disabled={!formState.isValid} />
                 </form>
                 <Separator />
                 <FacebookLogin>
