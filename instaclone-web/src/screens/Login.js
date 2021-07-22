@@ -8,6 +8,7 @@ import Separator from "../components/auth/Separator";
 import Input from "../components/auth/Input";
 import FormBox from "../components/auth/FormBox";
 import BottomBox from "../components/auth/BottomBox";
+import { useState } from "react";
 
 
 const FacebookLogin = styled.div`
@@ -19,6 +20,22 @@ const FacebookLogin = styled.div`
 `
 
 function Login() {
+    const [username, setUsername] = useState("");
+    const [usernameError, setUsernameError] = useState("");
+    const onUsernameChange = (event) => {
+        setUsername(event.target.value);
+    }
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        if (username === "") {
+            setUsernameError("Not empty plz")
+        }
+        if (username.length < 10) {
+            setUsernameError("too short");
+        }
+        console.log(username);
+    }
     return (
         <AuthLayout>
             <FormBox>
@@ -26,10 +43,16 @@ function Login() {
                     <FontAwesomeIcon icon={faInstagram} size="3x" />
                 </div>
                 <h1>Instagram</h1>
-                <form>
-                    <Input type="text" placeholder="Username" />
+                <form onSubmit={handleSubmit}>
+                    {usernameError}
+                    <Input
+                        onChange={onUsernameChange}
+                        value={username}
+                        type="text"
+                        placeholder="Username" />
                     <Input type="password" placeholder="Password" />
-                    <Button type="submit" value="Log in" />
+                    <Button type="submit" value="Log in"
+                        disabled={username === "" && username.length < 10} />
                 </form>
                 <Separator />
                 <FacebookLogin>
