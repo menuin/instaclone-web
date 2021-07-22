@@ -2,8 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { PropTypes } from "prop-types";
 
 function PageTitle({ title }) {
-    console.log(title);
-    return <Helmet>{title} | Instaclone</Helmet>
+    return <Helmet><title>{title} | Instaclone</title></Helmet>;
 }
 
 PageTitle.propTypes = {
