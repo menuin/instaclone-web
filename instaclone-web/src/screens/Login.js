@@ -11,6 +11,7 @@ import BottomBox from "../components/auth/BottomBox";
 import PageTitle from "../components/PageTitle";
 import { useForm } from "react-hook-form";
 import FormError from "../components/auth/FormError";
+import { gql, useMutation } from "@apollo/client";
 
 
 const FacebookLogin = styled.div`
@@ -20,14 +21,39 @@ const FacebookLogin = styled.div`
         font-weight : 600;
     }
 `
-
+const LOGIN_MUTATION = gql`
+    mutation login($username:String!, $password:String!){
+        login(username:$username, password:$password){
+            ok
+            token
+            error
+        }
+    }
+`
 function Login() {
-    const { register, watch, handleSubmit, formState } = useForm({
+    const { register, handleSubmit, formState, getValues, setError } = useForm({
         mode: "onChange",
+    });
+    const onCompleted = (data) => {
+        const { login: { ok, error, token } } = data;
+        if (!ok) {
+            setError("result", {
+                message: error,
+            })
+        }
+    }
+    const [login, { loading }] = useMutation(LOGIN_MUTATION, {
+        onCompleted,
     });
 
     const onSubmitValid = (data) => {
-        // console.log(data);
+        if (loading) {
+            return;
+        }
+        const { username, password } = getValues();
+        login({
+            variables: { username, password },
+        })
     }
 
     return (
@@ -63,7 +89,12 @@ function Login() {
                         hasError={Boolean(formState.errors?.password?.message)}
                     />
                     <FormError message={formState.errors?.password?.message} />
-                    <Button type="submit" value="Log in" disabled={!formState.isValid} />
+                    <Button
+                        type="submit"
+                        value={loading ? "Loading..." : "Log in"}
+                        disabled={!formState.isValid || loading}
+                    />
+                    <FormError message={formState.errors?.result?.message} />
                 </form>
                 <Separator />
                 <FacebookLogin>
