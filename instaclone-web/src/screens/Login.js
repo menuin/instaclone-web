@@ -12,6 +12,7 @@ import PageTitle from "../components/PageTitle";
 import { useForm } from "react-hook-form";
 import FormError from "../components/auth/FormError";
 import { gql, useMutation } from "@apollo/client";
+import { logUserIn } from "../apollo";
 
 
 const FacebookLogin = styled.div`
@@ -31,15 +32,23 @@ const LOGIN_MUTATION = gql`
     }
 `
 function Login() {
-    const { register, handleSubmit, formState, getValues, setError } = useForm({
-        mode: "onChange",
-    });
+    const { register,
+        handleSubmit,
+        formState,
+        getValues,
+        setError,
+        clearErrors } = useForm({
+            mode: "onChange",
+        });
     const onCompleted = (data) => {
         const { login: { ok, error, token } } = data;
         if (!ok) {
-            setError("result", {
+            return setError("result", {
                 message: error,
             })
+        }
+        if (token) {
+            logUserIn(token);
         }
     }
     const [login, { loading }] = useMutation(LOGIN_MUTATION, {
@@ -55,7 +64,9 @@ function Login() {
             variables: { username, password },
         })
     }
-
+    const clearLoginError = () => {
+        clearErrors("result");
+    }
     return (
         <AuthLayout>
             <PageTitle title="Login" />
@@ -73,6 +84,7 @@ function Login() {
                                 message: "Username should be longer than 5 characters"
                             },
                         })}
+                        onFocus={clearLoginError}
                         name="username"
                         type="text"
                         placeholder="Username"
@@ -83,6 +95,7 @@ function Login() {
                         {...register('password', {
                             required: "Password is required.",
                         })}
+                        onFocus={clearLoginError}
                         name="password"
                         type="password"
                         placeholder="Password"
