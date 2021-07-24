@@ -3,6 +3,8 @@ import { HelmetProvider } from "react-helmet-async";
 import { HashRouter as Router, Route, Switch } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 import { client, darkModeVar, isLoggedInVar } from "./apollo";
+import Header from "./components/Header";
+import Layout from "./components/Layout";
 import routes from "./routes";
 import Home from "./screens/Home";
 import Login from "./screens/Login";
@@ -21,9 +23,13 @@ function App() {
         <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
           <GlobalStyles />
           <Router>
+
             <Switch>
               <Route path={routes.home} exact>
-                {isLoggedIn ? <Home /> : <Login />}
+                {isLoggedIn ? (
+                  <Layout>
+                    <Home />
+                  </Layout>) : <Login />}
               </Route>
               {!isLoggedIn ? (
                 <Route path={routes.signUp}>
@@ -34,6 +40,7 @@ function App() {
                 <NotFound />
               </Route>
             </Switch>
+
           </Router>
         </ThemeProvider>
       </HelmetProvider>

@@ -19,7 +19,7 @@ export const enableDarkMode = () => {
 }
 
 export const disableDarkMode = () => {
-    localStorage.setItem(DARK_MODE, "disabled");
+    localStorage.removeItem(DARK_MODE);
     darkModeVar(false);
 }
 export const darkModeVar = makeVar(Boolean(localStorage.getItem(DARK_MODE)));
