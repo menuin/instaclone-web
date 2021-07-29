@@ -2,6 +2,7 @@ import { gql, useMutation } from "@apollo/client";
 import PropTypes from "prop-types";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
+import useUser from "../../hooks/useUser";
 import { FatText } from "../shared";
 import Comment from "./Comment";
 
@@ -10,6 +11,7 @@ const CREATE_COMMENT_MUTATION = gql`
         createComment(photoId:$photoId, payload:$payload){
             ok
             error
+            id
         }
     }
 `
@@ -28,8 +30,47 @@ const CommentCount = styled.span`
 `
 
 function Comments({ photoId, author, caption, commentNumber, comments }) {
-    const [createCommentMutation, { loading }] = useMutation(CREATE_COMMENT_MUTATION);
-    const { register, handleSubmit, setValue } = useForm();
+    const { data: userData } = useUser();
+    const { register, handleSubmit, setValue, getValues } = useForm();
+    const createCommentUpdate = (cache, result) => {
+        const { payload } = getValues();
+        setValue("payload", "");
+
+        const {
+            data: {
+                createComment: { ok, id },
+            },
+        } = result;
+
+        if (ok && userData?.me) {
+            const newComment = {
+                __typename: "Comment",
+                createdAt: Date.now() + "", // stringify
+                id,
+                isMine: true,
+                payload,
+                user: {
+                    ...userData.me,
+                },
+            };
+            cache.modify({
+                id: `Photo:${photoId}`,
+                fields: {
+                    comments(prev) {
+                        return [...prev, newComment];
+                    },
+                    commentNumber(prev) {
+                        return prev + 1;
+                    }
+                }
+            })
+        }
+    }
+    const [createCommentMutation, { loading }] = useMutation(CREATE_COMMENT_MUTATION,
+        {
+            update: createCommentUpdate,
+        });
+
     const onValid = (data) => {
         const { payload } = data;
         if (loading) {
@@ -41,7 +82,6 @@ function Comments({ photoId, author, caption, commentNumber, comments }) {
                 payload,
             }
         });
-        setValue("payload", "");
     }
     return (
         <CommentsContainer>
